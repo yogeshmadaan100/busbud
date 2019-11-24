@@ -127,6 +127,11 @@ it should produce an output similar to:
 Tomcat initialized with port(s): 8080 (http)
 ```
 
+### Heroku Deployement
+```$xslt
+https://damp-thicket-79087.herokuapp.com/suggestions?q=London&latitude=43.70011&longitude=-79.4163
+```
+
 ### TODO
 1. Improve the sorting logic
 2. Write end to end tests
