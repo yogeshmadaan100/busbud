@@ -2,12 +2,11 @@ package com.busbud.autocomplete.csv;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.core.io.ClassPathResource;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.net.URL;
+import java.io.*;
 import java.util.List;
+import java.util.Objects;
 
 public class ReaderImplTest {
     @Test
@@ -28,13 +27,8 @@ public class ReaderImplTest {
         }, true);
     }
 
-    private FileReader loadFileFromResource(String resourceName) throws IOException {
-        ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-        URL resourceURL = classLoader.getResource(resourceName);
-        if (resourceURL == null) {
-            throw new IOException("Resource not found");
-        }
-        return new FileReader(new File(resourceURL.getFile()));
+    private Reader loadFileFromResource(String resourceName) throws IOException {
+        return new InputStreamReader(Objects.requireNonNull(new ClassPathResource(resourceName).getInputStream()));
     }
 
 }

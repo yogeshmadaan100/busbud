@@ -1,5 +1,6 @@
 package com.busbud.autocomplete.service;
 
+import com.busbud.autocomplete.cache.ICache;
 import com.busbud.autocomplete.dao.ICityDao;
 import com.busbud.autocomplete.model.City;
 import com.busbud.autocomplete.model.CityDTO;
@@ -23,6 +24,8 @@ public class AutoCompleteServiceTest {
     private ICityDao cityDao;
     @Mock
     private IScoreStrategy scoreStrategy;
+    @Mock
+    private ICache cache;
 
     private City london, singapore, delhi;
 
@@ -30,7 +33,7 @@ public class AutoCompleteServiceTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        autoCompleteService = new AutoCompleteService(cityDao, scoreStrategy);
+        autoCompleteService = new AutoCompleteService(cityDao, scoreStrategy, cache);
         setupCities();
     }
 
@@ -64,6 +67,7 @@ public class AutoCompleteServiceTest {
         cities.add(london);
         cities.add(singapore);
 
+        Mockito.doReturn(false).when(cache).isCachePresent(Mockito.anyString(), Mockito.anyDouble(), Mockito.anyDouble());
         Mockito.doReturn(cities.listIterator()).when(cityDao).searchByPrefix("lon");
         ResponseEntity<List<CityDTO>> responseEntity = autoCompleteService.getSuggestions("lon", null, null);
 
@@ -71,6 +75,7 @@ public class AutoCompleteServiceTest {
         expectedResponse.add(london.ToDTO(1));
         expectedResponse.add(singapore.ToDTO(1));
         Assert.assertEquals(expectedResponse, responseEntity.getBody());
+        Mockito.verify(cache).saveInCache("lon", null, null, expectedResponse);
     }
 
     @Test
@@ -80,10 +85,35 @@ public class AutoCompleteServiceTest {
         cities.add(singapore);
         cities.add(delhi);
 
+        Mockito.doReturn(false).when(cache).isCachePresent(Mockito.anyString(), Mockito.anyDouble(), Mockito.anyDouble());
         Mockito.doReturn(cities.listIterator()).when(cityDao).searchByPrefix("lon");
         Mockito.doReturn(0.1).when(scoreStrategy).getScore("lon", 1.1, 1.1, london);
         Mockito.doReturn(0.59).when(scoreStrategy).getScore("lon", 1.1, 1.1, singapore);
         Mockito.doReturn(0.81).when(scoreStrategy).getScore("lon", 1.1, 1.1, delhi);
+        ResponseEntity<List<CityDTO>> responseEntity = autoCompleteService.getSuggestions("lon", 1.1, 1.1);
+
+        List<CityDTO> expectedResponse = new ArrayList<>();
+        expectedResponse.add(delhi.ToDTO(0.81));
+        expectedResponse.add(singapore.ToDTO(.59));
+        expectedResponse.add(london.ToDTO(.1));
+        Assert.assertEquals(expectedResponse, responseEntity.getBody());
+        Mockito.verify(cache).saveInCache("lon", 1.1, 1.1, expectedResponse);
+    }
+
+    @Test
+    public void getSuggestions_CachePresent_Success() {
+        List<CityDTO> cacheResponse = new ArrayList<>();
+        cacheResponse.add(delhi.ToDTO(0.81));
+        cacheResponse.add(singapore.ToDTO(.59));
+        cacheResponse.add(london.ToDTO(.1));
+        cache.saveInCache("lon", 1.1, 1.1, cacheResponse);
+
+
+
+        Mockito.doReturn(true).when(cache).isCachePresent(Mockito.anyString(), Mockito.anyDouble(), Mockito.anyDouble());
+        Mockito.doReturn(cacheResponse).when(cache).getCache(Mockito.anyString(), Mockito.anyDouble(), Mockito.anyDouble());
+
+
         ResponseEntity<List<CityDTO>> responseEntity = autoCompleteService.getSuggestions("lon", 1.1, 1.1);
 
         List<CityDTO> expectedResponse = new ArrayList<>();

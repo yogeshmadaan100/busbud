@@ -1,7 +1,10 @@
 package com.busbud.autocomplete.config;
 
+import com.busbud.autocomplete.cache.CityCacheImpl;
+import com.busbud.autocomplete.cache.ICache;
 import com.busbud.autocomplete.dao.CityDaoImpl;
 import com.busbud.autocomplete.dao.ICityDao;
+import com.busbud.autocomplete.model.City;
 import com.busbud.autocomplete.score.IScoreStrategy;
 import com.busbud.autocomplete.score.LocationAlternateNamePopulationStrategy;
 import com.busbud.autocomplete.service.AutoCompleteService;
@@ -24,10 +27,15 @@ public class ServiceConfig {
     }
 
     @Bean
-    AutoCompleteService getAutoCompleteService(ICityDao cityDao, IScoreStrategy scoreStrategy) {
-        System.out.println("creating service");
-        return new AutoCompleteService(cityDao, scoreStrategy);
+    ICache getCityCache() {
+        return new CityCacheImpl();
     }
+
+    @Bean
+    AutoCompleteService getAutoCompleteService(ICityDao cityDao, IScoreStrategy scoreStrategy, ICache cache) {
+        return new AutoCompleteService(cityDao, scoreStrategy, cache);
+    }
+
 
 
 }

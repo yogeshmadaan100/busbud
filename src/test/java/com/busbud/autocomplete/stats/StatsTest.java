@@ -7,6 +7,7 @@ public class StatsTest {
 
     @Test
     public void testStats() {
+        Stats._instance = null;
         Stats stats = Stats.getInstance();
         Assert.assertEquals(0, stats.getMaxPopulation());
         stats.setMaxPopulation(1000);

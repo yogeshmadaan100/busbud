@@ -1,5 +1,6 @@
 package com.busbud.autocomplete.service;
 
+import com.busbud.autocomplete.cache.ICache;
 import com.busbud.autocomplete.dao.ICityDao;
 import com.busbud.autocomplete.model.City;
 import com.busbud.autocomplete.model.CityDTO;
@@ -14,10 +15,12 @@ import java.util.*;
 public class AutoCompleteService {
     private ICityDao cityDao;
     private IScoreStrategy scoreStrategy;
+    private ICache cityCache;
 
-    public AutoCompleteService(ICityDao cityDao, IScoreStrategy scoreStrategy) {
+    public AutoCompleteService(ICityDao cityDao, IScoreStrategy scoreStrategy, ICache cityCache) {
         this.cityDao = cityDao;
         this.scoreStrategy = scoreStrategy;
+        this.cityCache = cityCache;
     }
 
     public ResponseEntity<List<CityDTO>> getSuggestions(String query, Double latitude, Double longitude) {
@@ -28,6 +31,9 @@ public class AutoCompleteService {
         if ((latitude == null && longitude != null) || (latitude != null && longitude == null))
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
+        if (cityCache.isCachePresent(query, latitude, longitude)) {
+            return ResponseEntity.ok(cityCache.getCache(query, latitude, longitude));
+        }
         Iterator<City> searchResult = cityDao.searchByPrefix(query);
         if (latitude == null || latitude == 0.0) {
             List<CityDTO> result = new ArrayList<>();
@@ -35,7 +41,8 @@ public class AutoCompleteService {
                 City city = searchResult.next();
                 result.add(city.ToDTO(1));
             }
-            return new ResponseEntity<>(result, HttpStatus.OK);
+            cityCache.saveInCache(query, latitude, longitude, result);
+            return ResponseEntity.ok(result);
         }
 
         Queue<CityDTO> priorityQueue = new PriorityQueue<>((o1, o2) -> {
@@ -54,6 +61,7 @@ public class AutoCompleteService {
         while (!priorityQueue.isEmpty()) {
             result.add(priorityQueue.poll());
         }
-        return new ResponseEntity<>(result, HttpStatus.OK);
+        cityCache.saveInCache(query, latitude, longitude, result);
+        return ResponseEntity.ok(result);
     }
 }

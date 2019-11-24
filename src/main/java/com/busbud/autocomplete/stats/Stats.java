@@ -1,7 +1,8 @@
 package com.busbud.autocomplete.stats;
 
 public class Stats {
-    private static Stats _instance;
+    // visible for testing
+    static Stats _instance;
     private long maxPopulation;
 
     private Stats() {
