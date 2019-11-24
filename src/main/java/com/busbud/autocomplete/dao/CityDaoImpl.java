@@ -9,11 +9,20 @@ import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFa
 import java.util.List;
 
 public class CityDaoImpl implements ICityDao {
+    private static ICityDao _instance;
     private final RadixTree<City> radixTree;
-    private long maxPopulation;
+    // visible for testing
+    long maxPopulation;
 
-    public CityDaoImpl() {
+    // visible for testing
+    CityDaoImpl() {
         radixTree = new ConcurrentRadixTree<>(new DefaultCharArrayNodeFactory());
+    }
+
+    public static ICityDao getInstance() {
+        if(_instance == null)
+            _instance = new CityDaoImpl();
+        return _instance;
     }
 
     @Override

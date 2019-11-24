@@ -1,5 +1,6 @@
 package com.busbud.autocomplete.model;
 
+import java.text.DecimalFormat;
 import java.util.Objects;
 
 public class City {
@@ -163,5 +164,10 @@ public class City {
                 ", timeZone='" + timeZone + '\'' +
                 ", modifiedAt='" + modifiedAt + '\'' +
                 '}';
+    }
+
+    public CityDTO ToDTO(double score) {
+        DecimalFormat df = new DecimalFormat("#.00");
+        return new CityDTO(name, String.valueOf(lat), String.valueOf(lng), Double.valueOf(df.format(score)));
     }
 }

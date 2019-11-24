@@ -20,7 +20,6 @@ public class CityDeserializer implements Deserializer<City> {
             city.setFeatCode("feat_code");
             city.setCountry("country cc2");
             city.setPopulation(Long.parseLong(line.get("population")));
-//            city.setElevation(Long.parseLong(line.get("elevation")));
             city.setTimeZone(line.get("tz"));
             city.setModifiedAt(line.get("modified_at"));
         } catch (Exception e) {
