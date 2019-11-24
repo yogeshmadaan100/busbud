@@ -41,7 +41,7 @@ public class LocationAlternateNamePopulationStrategy implements IScoreStrategy {
 
     // visible for testing
     double getAlternateNameScore(String query, City candidateCity) {
-        return candidateCity.getAltName().contains(query) ? alternateNameWeightage : 0;
+        return candidateCity.getAltName().toLowerCase().contains(query.toLowerCase()) ? alternateNameWeightage : 0;
     }
 
 }

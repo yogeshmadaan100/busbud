@@ -6,6 +6,7 @@ import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFactory;
 
+import java.util.Iterator;
 import java.util.List;
 
 public class CityDaoImpl implements ICityDao {
@@ -26,8 +27,8 @@ public class CityDaoImpl implements ICityDao {
     }
 
     @Override
-    public Iterable<City> searchByPrefix(String query) {
-        return radixTree.getValuesForKeysStartingWith(query.toLowerCase());
+    public Iterator<City> searchByPrefix(String query) {
+        return radixTree.getValuesForKeysStartingWith(query.toLowerCase()).iterator();
     }
 
     @Override

@@ -4,11 +4,10 @@ import com.busbud.autocomplete.dao.ICityDao;
 import com.busbud.autocomplete.model.City;
 import com.busbud.autocomplete.model.CityDTO;
 import com.busbud.autocomplete.score.IScoreStrategy;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 
 @Service
@@ -21,20 +20,40 @@ public class AutoCompleteService {
         this.scoreStrategy = scoreStrategy;
     }
 
+    public ResponseEntity<List<CityDTO>> getSuggestions(String query, Double latitude, Double longitude) {
+        if (query == null || query.equals("")) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
-    public List<CityDTO> getSuggestions(String query, double latitude, double longitude) {
-        Iterator<City> searchResult = cityDao.searchByPrefix(query).iterator();
-        PriorityQueue<CityDTO> priorityQueue = new PriorityQueue<>((o1, o2) -> {
-            if(o1.getScore() > o2.getScore())
+        if ((latitude == null && longitude != null) || (latitude != null && longitude == null))
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        Iterator<City> searchResult = cityDao.searchByPrefix(query);
+        if (latitude == null || latitude == 0.0) {
+            List<CityDTO> result = new ArrayList<>();
+            while (searchResult.hasNext()) {
+                City city = searchResult.next();
+                result.add(city.ToDTO(1));
+            }
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        }
+
+        Queue<CityDTO> priorityQueue = new PriorityQueue<>((o1, o2) -> {
+            if (o1.getScore() > o2.getScore())
                 return -1;
-            if(o1.getScore() < o2.getScore())
+            if (o1.getScore() < o2.getScore())
                 return 1;
             return 0;
         });
+
         while (searchResult.hasNext()) {
             City city = searchResult.next();
             priorityQueue.offer(city.ToDTO(scoreStrategy.getScore(query, latitude, longitude, city)));
         }
-        return new ArrayList<>(priorityQueue);
+        List<CityDTO> result = new ArrayList<>(priorityQueue.size());
+        while (!priorityQueue.isEmpty()) {
+            result.add(priorityQueue.poll());
+        }
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 }

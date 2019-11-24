@@ -6,6 +6,8 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.StreamSupport;
 
 public class CityDaoImplTest {
@@ -25,7 +27,7 @@ public class CityDaoImplTest {
         CityDaoImpl cityDao = new CityDaoImpl();
         List<City> cities = createRandomCities(5);
         cityDao.batchSaveCities(cities);
-        Assert.assertEquals(5L, StreamSupport.stream(cityDao.searchByPrefix("").spliterator(), false).count());
+        Assert.assertEquals(5L, StreamSupport.stream(Spliterators.spliteratorUnknownSize(cityDao.searchByPrefix(""), 0), false).count());
     }
 
 
@@ -34,7 +36,7 @@ public class CityDaoImplTest {
         CityDaoImpl cityDao = new CityDaoImpl();
         List<City> cities = createRandomCities(5);
         cityDao.batchSaveCities(cities);
-        Assert.assertEquals(2L, StreamSupport.stream(cityDao.searchByPrefix("Lon").spliterator(), false).count());
+        Assert.assertEquals(2L, StreamSupport.stream(Spliterators.spliteratorUnknownSize(cityDao.searchByPrefix("Lon"), 0), false).count());
     }
 
     @Test
@@ -42,7 +44,7 @@ public class CityDaoImplTest {
         CityDaoImpl cityDao = new CityDaoImpl();
         List<City> cities = createRandomCities(5);
         cityDao.batchSaveCities(cities);
-        Assert.assertEquals(2L,StreamSupport.stream(cityDao.searchByPrefix("lon").spliterator(), false).count());
+        Assert.assertEquals(2L, StreamSupport.stream(Spliterators.spliteratorUnknownSize(cityDao.searchByPrefix("lon"), 0), false).count());
     }
 
     @Test
@@ -50,7 +52,7 @@ public class CityDaoImplTest {
         CityDaoImpl cityDao = new CityDaoImpl();
         List<City> cities = createRandomCities(5);
         cityDao.batchSaveCities(cities);
-        Assert.assertEquals(0L, StreamSupport.stream(cityDao.searchByPrefix("lonfasf").spliterator(), false).count());
+        Assert.assertEquals(0L, StreamSupport.stream(Spliterators.spliteratorUnknownSize(cityDao.searchByPrefix("lonfasf"), 0), false).count());
     }
 
     List<City> createRandomCities(int count) {
